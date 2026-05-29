@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import EditProduct from './pages/admin/EditProduct';
 
 // Public Components
 import Navbar from './components/Navbar';
@@ -52,10 +53,12 @@ function App() {
         </Route>
 
         <Route element={<ProtectedRoute />}>
-            <Route path="/admin/dashboard" element={<AdminDashboard />} />
-            <Route path="/admin/products" element={<AdminProducts />} />
-            <Route path="/admin/products/add" element={<AddProduct />} />
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/admin/products" element={<AdminProducts />} />
+          <Route path="/admin/products/add" element={<AddProduct />} />
+          <Route path="/admin/products/:id/edit" element={<EditProduct />} />  {/* ADD THIS */}
         </Route>
+
 
       </Routes>
     </Router>
