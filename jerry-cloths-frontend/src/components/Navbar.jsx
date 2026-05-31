@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import { Search, ShoppingBag, User, Menu, ChevronDown, ChevronRight, X, ChevronLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { CartContext } from '../Context/Context';
+import { CartContext } from '../context/Context';
 
 const Navbar = () => {
   const [activeMenu, setActiveMenu] = useState(null);

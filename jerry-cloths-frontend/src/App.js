@@ -1,70 +1,51 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import EditProduct from './pages/admin/EditProduct.jsx';
-import { CartProvider } from './Context/Context.js';
-import CartDrawer from './components/CartDrawer.jsx';
-
-// Public Components
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { CartProvider } from './context/Context.js';
+import CartDrawer from './components/CartDrawer';
 import Navbar from './components/Navbar';
-import Hero from './components/Hero';
-import LatestArrivals from './components/LatestArrivals';
-import { Gallery, Footer } from './components/FooterSection';
+
+// Pages
 import Login from './pages/Login';
 import Signup from './pages/Signup';
+import Hero from './components/Hero';
+import LatestArrivals from './components/LatestArrivals';
 
-// Admin Components
+// Utils
 import ProtectedRoute from './components/ProtectedRoute';
-import AdminLogin from './pages/admin/AdminLogin';
-import AdminDashboard from './pages/admin/AdminDashboard';
-import AdminProducts from './pages/admin/AdminProducts'; // Ensure this file exists in src/pages/admin/
-import AddProduct from './pages/admin/AddProduct';       // Ensure this file exists in src/pages/admin/
+
+function AppContent() {
+  const location = useLocation();
+
+  // Hide navbar on auth routes
+  const hideNavbarRoutes = ['/login', '/signup'];
+  const shouldShowNavbar = !hideNavbarRoutes.includes(location.pathname);
+
+  return (
+    <>
+      {shouldShowNavbar && <Navbar />}
+      <CartDrawer />
+      <Routes>
+        {/* Auth Routes */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+
+        {/* Home Route */}
+        <Route path="/" element={
+          <>
+            <Hero />
+            <LatestArrivals />
+          </>
+        } />
+      </Routes>
+    </>
+  );
+}
 
 function App() {
   return (
     <CartProvider>
-      <CartDrawer />
       <Router>
-        <Routes>
-
-          {/* --- PUBLIC SHOPPER ROUTES --- */}
-          <Route path="/" element={
-            <div className="font-sans text-brand-black bg-white min-h-screen flex flex-col">
-              <Navbar />
-              <main>
-                <Hero />
-                <LatestArrivals />
-                <Gallery />
-              </main>
-              <Footer />
-            </div>
-          } />
-
-          {/* Auth Pages (Public) */}
-          <Route path="/login" element={<><Navbar /><Login /><Footer /></>} />
-          <Route path="/signup" element={<><Navbar /><Signup /><Footer /></>} />
-
-
-          {/* --- ADMIN AREA --- */}
-
-          {/* 1. Admin Login (Publicly accessible) */}
-          <Route path="/admin/login" element={<AdminLogin />} />
-
-          {/* 2. Protected Routes (Only accessible with Token) */}
-          <Route element={<ProtectedRoute />}>
-            <Route path="/admin/dashboard" element={<AdminDashboard />} />
-            <Route path="/admin/products" element={<AdminProducts />} />
-            <Route path="/admin/products/add" element={<AddProduct />} />
-          </Route>
-
-          <Route element={<ProtectedRoute />}>
-            <Route path="/admin/dashboard" element={<AdminDashboard />} />
-            <Route path="/admin/products" element={<AdminProducts />} />
-            <Route path="/admin/products/add" element={<AddProduct />} />
-            <Route path="/admin/products/:id/edit" element={<EditProduct />} />  {/* ADD THIS */}
-          </Route>
-
-
-        </Routes>
+        <AppContent />
       </Router>
     </CartProvider>
   );
