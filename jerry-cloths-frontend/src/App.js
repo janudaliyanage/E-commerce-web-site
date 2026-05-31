@@ -1,8 +1,8 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import EditProduct from './pages/admin/EditProduct';
-import { CartProvider } from './context/CartContext';
-import CartDrawer from './components/CartDrawer';
+import EditProduct from './pages/admin/EditProduct.jsx';
+import { CartProvider } from './Context/Context.js';
+import CartDrawer from './components/CartDrawer.jsx';
 
 // Public Components
 import Navbar from './components/Navbar';

@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { ChevronLeft, ChevronRight, Heart } from 'lucide-react';
 import { fetchAllProducts } from '../services/api';
-import { CartContext } from '../context/CartContext';
+import { CartContext } from '../Context/Context';
 
 const LatestArrivals = () => {
   const [products, setProducts] = useState([]);
@@ -117,8 +117,8 @@ const LatestArrivals = () => {
                   <div className="absolute bottom-4 left-4">
                     <span
                       className={`px-3 py-1 rounded-full text-xs font-semibold ${product.stock > 0
-                          ? 'bg-green-500 text-white'
-                          : 'bg-red-500 text-white'
+                        ? 'bg-green-500 text-white'
+                        : 'bg-red-500 text-white'
                         }`}
                     >
                       {product.stock > 0 ? `${product.stock} In Stock` : 'Out of Stock'}
@@ -171,8 +171,8 @@ const LatestArrivals = () => {
                     onClick={() => handleAddToCart(product)}
                     disabled={product.stock <= 0}
                     className={`w-full py-3 px-4 rounded-lg font-bold transition mb-2 ${product.stock > 0
-                        ? 'bg-blue-500 hover:bg-blue-600 text-white cursor-pointer'
-                        : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      ? 'bg-blue-500 hover:bg-blue-600 text-white cursor-pointer'
+                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                       }`}
                   >
                     {product.stock > 0 ? 'Add to Cart' : 'Out of Stock'}
