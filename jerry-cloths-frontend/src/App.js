@@ -1,6 +1,8 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import EditProduct from './pages/admin/EditProduct';
+import { CartProvider } from './context/CartContext';
+import CartDrawer from './components/CartDrawer';
 
 // Public Components
 import Navbar from './components/Navbar';
@@ -19,49 +21,52 @@ import AddProduct from './pages/admin/AddProduct';       // Ensure this file exi
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        
-        {/* --- PUBLIC SHOPPER ROUTES --- */}
-        <Route path="/" element={
-          <div className="font-sans text-brand-black bg-white min-h-screen flex flex-col">
-            <Navbar />
-            <main>
-              <Hero />
-              <LatestArrivals />
-              <Gallery />
-            </main>
-            <Footer />
-          </div>
-        } />
-        
-        {/* Auth Pages (Public) */}
-        <Route path="/login" element={<><Navbar /><Login /><Footer /></>} />
-        <Route path="/signup" element={<><Navbar /><Signup /><Footer /></>} />
+    <CartProvider>
+      <CartDrawer />
+      <Router>
+        <Routes>
+
+          {/* --- PUBLIC SHOPPER ROUTES --- */}
+          <Route path="/" element={
+            <div className="font-sans text-brand-black bg-white min-h-screen flex flex-col">
+              <Navbar />
+              <main>
+                <Hero />
+                <LatestArrivals />
+                <Gallery />
+              </main>
+              <Footer />
+            </div>
+          } />
+
+          {/* Auth Pages (Public) */}
+          <Route path="/login" element={<><Navbar /><Login /><Footer /></>} />
+          <Route path="/signup" element={<><Navbar /><Signup /><Footer /></>} />
 
 
-        {/* --- ADMIN AREA --- */}
-        
-        {/* 1. Admin Login (Publicly accessible) */}
-        <Route path="/admin/login" element={<AdminLogin />} />
+          {/* --- ADMIN AREA --- */}
 
-        {/* 2. Protected Routes (Only accessible with Token) */}
-        <Route element={<ProtectedRoute />}>
-           <Route path="/admin/dashboard" element={<AdminDashboard />} />
-           <Route path="/admin/products" element={<AdminProducts />} />
-           <Route path="/admin/products/add" element={<AddProduct />} />
-        </Route>
+          {/* 1. Admin Login (Publicly accessible) */}
+          <Route path="/admin/login" element={<AdminLogin />} />
 
-        <Route element={<ProtectedRoute />}>
-          <Route path="/admin/dashboard" element={<AdminDashboard />} />
-          <Route path="/admin/products" element={<AdminProducts />} />
-          <Route path="/admin/products/add" element={<AddProduct />} />
-          <Route path="/admin/products/:id/edit" element={<EditProduct />} />  {/* ADD THIS */}
-        </Route>
+          {/* 2. Protected Routes (Only accessible with Token) */}
+          <Route element={<ProtectedRoute />}>
+            <Route path="/admin/dashboard" element={<AdminDashboard />} />
+            <Route path="/admin/products" element={<AdminProducts />} />
+            <Route path="/admin/products/add" element={<AddProduct />} />
+          </Route>
+
+          <Route element={<ProtectedRoute />}>
+            <Route path="/admin/dashboard" element={<AdminDashboard />} />
+            <Route path="/admin/products" element={<AdminProducts />} />
+            <Route path="/admin/products/add" element={<AddProduct />} />
+            <Route path="/admin/products/:id/edit" element={<EditProduct />} />  {/* ADD THIS */}
+          </Route>
 
 
-      </Routes>
-    </Router>
+        </Routes>
+      </Router>
+    </CartProvider>
   );
 }
 

@@ -64,8 +64,8 @@ export const updateProduct = async (id, product) => {
 
 export const deleteProduct = async (id) => {
   try {
-    const response = await fetch(`${API_URL}/products/${id}`, { 
-      method: 'DELETE' 
+    const response = await fetch(`${API_URL}/products/${id}`, {
+      method: 'DELETE'
     });
     if (!response.ok) {
       throw new Error('Failed to delete product');
@@ -100,5 +100,28 @@ export const filterByCategory = async (category) => {
   } catch (error) {
     console.error('Error filtering products:', error);
     return [];
+  }
+};
+
+export const uploadImage = async (file) => {
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await fetch('http://localhost:8080/api/upload/image', {
+      method: 'POST',
+      body: formData,
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      return data.imageUrl;
+    } else {
+      throw new Error(data.message);
+    }
+  } catch (error) {
+    console.error('Error uploading image:', error);
+    return null;
   }
 };

@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft } from 'lucide-react';
-import { createProduct } from '../../services/api';
+import { createProduct, uploadImage } from '../../services/api';
 
 const AddProduct = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     price: '',
@@ -27,20 +28,36 @@ const AddProduct = () => {
     }));
   };
 
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setUploading(true);
+    const imageUrl = await uploadImage(file);
+
+    if (imageUrl) {
+      setFormData(prev => ({
+        ...prev,
+        imgUrl: imageUrl
+      }));
+    } else {
+      alert('Failed to upload image');
+    }
+    setUploading(false);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
 
     try {
-      // Validation
       if (!formData.name || !formData.price || !formData.stock) {
         setError('Please fill in all required fields');
         setLoading(false);
         return;
       }
 
-      // Convert string values to proper types
       const productData = {
         ...formData,
         price: parseFloat(formData.price),
@@ -48,7 +65,7 @@ const AddProduct = () => {
       };
 
       const result = await createProduct(productData);
-      
+
       if (result && result.id) {
         alert('Product created successfully!');
         navigate('/admin/products');
@@ -65,7 +82,6 @@ const AddProduct = () => {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      {/* Header */}
       <header className="bg-white shadow sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <button
@@ -78,7 +94,6 @@ const AddProduct = () => {
         </div>
       </header>
 
-      {/* Main Content */}
       <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="bg-white rounded-lg shadow p-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Add New Product</h1>
@@ -91,7 +106,6 @@ const AddProduct = () => {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Product Name */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Product Name <span className="text-red-500">*</span>
@@ -108,9 +122,7 @@ const AddProduct = () => {
               />
             </div>
 
-            {/* Price and Stock Row */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Price */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Price <span className="text-red-500">*</span>
@@ -132,7 +144,6 @@ const AddProduct = () => {
                 </div>
               </div>
 
-              {/* Stock */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Stock <span className="text-red-500">*</span>
@@ -151,7 +162,6 @@ const AddProduct = () => {
               </div>
             </div>
 
-            {/* Description */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
               <textarea
@@ -165,9 +175,7 @@ const AddProduct = () => {
               />
             </div>
 
-            {/* Category and Status Row */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Category */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
                 <select
@@ -185,7 +193,6 @@ const AddProduct = () => {
                 </select>
               </div>
 
-              {/* Status */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
                 <select
@@ -201,34 +208,30 @@ const AddProduct = () => {
               </div>
             </div>
 
-            {/* Image URL */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Image URL</label>
-              <input
-                type="url"
-                name="imgUrl"
-                value={formData.imgUrl}
-                onChange={handleChange}
-                placeholder="https://example.com/image.jpg"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 disabled:bg-gray-50"
-                disabled={loading}
-              />
+              <label className="block text-sm font-medium text-gray-700 mb-2">Product Image</label>
+              <div className="space-y-3">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 disabled:bg-gray-50"
+                  disabled={loading || uploading}
+                />
+                {uploading && <p className="text-blue-500 text-sm">Uploading image...</p>}
+              </div>
               {formData.imgUrl && (
                 <div className="mt-2">
                   <p className="text-xs text-gray-600 mb-2">Preview:</p>
-                  <img 
-                    src={formData.imgUrl} 
+                  <img
+                    src={formData.imgUrl}
                     alt="preview"
                     className="h-32 object-cover rounded border border-gray-200"
-                    onError={(e) => {
-                      e.target.src = 'https://via.placeholder.com/200?text=Invalid+URL';
-                    }}
                   />
                 </div>
               )}
             </div>
 
-            {/* Colors */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Colors</label>
               <input
@@ -243,7 +246,6 @@ const AddProduct = () => {
               <p className="text-xs text-gray-500 mt-1">Separate multiple colors with commas</p>
             </div>
 
-            {/* Sizes */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Sizes</label>
               <input
@@ -258,7 +260,6 @@ const AddProduct = () => {
               <p className="text-xs text-gray-500 mt-1">Separate multiple sizes with commas</p>
             </div>
 
-            {/* Submit Buttons */}
             <div className="flex space-x-4 pt-4">
               <button
                 type="button"
@@ -270,7 +271,7 @@ const AddProduct = () => {
               </button>
               <button
                 type="submit"
-                disabled={loading}
+                disabled={loading || uploading}
                 className="flex-1 px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition disabled:opacity-50"
               >
                 {loading ? 'Creating...' : 'Create Product'}
