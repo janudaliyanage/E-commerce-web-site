@@ -1,19 +1,13 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, ShoppingBag, User, Menu, ChevronDown, ChevronRight, X, ChevronLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { CartContext } from '../context/Context';
 
 const Navbar = () => {
   const [activeMenu, setActiveMenu] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileSubMenu, setMobileSubMenu] = useState(null);
 
-  // Cart Context
-  const { cartOpen, setCartOpen, getTotalItems } = useContext(CartContext);
-  const cartCount = getTotalItems();
-
-  // Disable scrolling when mobile menu is open
   useEffect(() => {
     if (mobileMenuOpen) {
       document.body.style.overflow = 'hidden';
@@ -22,7 +16,6 @@ const Navbar = () => {
     }
   }, [mobileMenuOpen]);
 
-  // DATA
   const MENU_CONTENT = {
     'FOR HIM': {
       title: 'FOR HIM',
@@ -80,47 +73,28 @@ const Navbar = () => {
   return (
     <>
       <header className="sticky top-0 z-40 bg-white shadow-sm" onMouseLeave={() => setActiveMenu(null)}>
-        {/* TOP UTILITY BAR */}
         <div className="border-b border-gray-100 bg-white relative z-50">
           <div className="max-w-[1800px] mx-auto flex justify-between items-center px-4 md:px-6 py-3">
-
-            {/* Mobile Menu Trigger */}
             <div className="md:hidden flex items-center">
               <Menu className="w-6 h-6 cursor-pointer" onClick={() => setMobileMenuOpen(true)} />
             </div>
 
-            {/* Desktop Question Text */}
             <div className="hidden md:flex text-[10px] font-bold text-gray-500 tracking-widest">
               QUESTIONS? (818) 206-8764
             </div>
 
-            {/* LOGO */}
             <div className="flex-1 flex justify-center md:justify-center absolute left-0 right-0 md:static pointer-events-none md:pointer-events-auto">
               <Link to="/" className="pointer-events-auto">
                 <img src="/assets/logo.png" alt="Jerry Cloths" className="h-8 md:h-10 object-contain" />
               </Link>
             </div>
 
-            {/* ICONS - Updated with Cart */}
             <div className="flex items-center space-x-4 md:space-x-6 z-10">
               <Link to="/login">
                 <User className="w-5 h-5 cursor-pointer text-gray-800 hover:text-gray-500 transition hidden md:block" />
               </Link>
               <Search className="w-5 h-5 cursor-pointer text-gray-800 hover:text-gray-500 transition" />
-
-              {/* Shopping Cart Icon with Badge */}
-              <div
-                className="relative cursor-pointer"
-                onClick={() => setCartOpen(!cartOpen)}
-              >
-                <ShoppingBag className="w-5 h-5 text-gray-800 hover:text-gray-500 transition" />
-                {cartCount > 0 && (
-                  <span className="absolute -bottom-1 -right-1 bg-red-500 text-white text-[9px] font-bold h-4 w-4 flex items-center justify-center rounded-full">
-                    {cartCount}
-                  </span>
-                )}
-              </div>
-
+              <ShoppingBag className="w-5 h-5 cursor-pointer text-gray-800 hover:text-gray-500 transition" />
               <div className="hidden md:flex items-center text-xs font-bold ml-2 cursor-pointer hover:opacity-70">
                 🇺🇸 US <ChevronDown size={12} className="ml-1" />
               </div>
@@ -128,7 +102,6 @@ const Navbar = () => {
           </div>
         </div>
 
-        {/* DESKTOP NAV (Hidden on Mobile) */}
         <nav className="hidden md:block relative bg-white z-40 border-b border-gray-100">
           <div className="flex justify-center">
             {Object.keys(MENU_CONTENT).map((item) => (
@@ -144,7 +117,6 @@ const Navbar = () => {
             ))}
           </div>
 
-          {/* MEGA MENU DROPDOWN */}
           <AnimatePresence>
             {activeMenu && MENU_CONTENT[activeMenu] && (
               <motion.div
@@ -191,11 +163,9 @@ const Navbar = () => {
         </nav>
       </header>
 
-      {/* MOBILE DRAWER (Slide-in) */}
       <AnimatePresence>
         {mobileMenuOpen && (
           <>
-            {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 0.5 }}
@@ -204,7 +174,6 @@ const Navbar = () => {
               className="fixed inset-0 bg-black z-50 md:hidden"
             />
 
-            {/* Drawer Container */}
             <motion.div
               initial={{ x: '-100%' }}
               animate={{ x: 0 }}
@@ -212,17 +181,12 @@ const Navbar = () => {
               transition={{ type: 'tween', duration: 0.3 }}
               className="fixed inset-y-0 left-0 w-[85%] max-w-sm bg-[#121212] text-white z-[60] overflow-hidden md:hidden shadow-2xl flex flex-col"
             >
-
-              {/* Header: Close Button */}
               <div className="flex justify-between items-center p-5 border-b border-gray-800">
                 <X className="w-6 h-6 cursor-pointer" onClick={() => setMobileMenuOpen(false)} />
               </div>
 
-              {/* Content Area */}
               <div className="flex-1 relative overflow-hidden">
                 <AnimatePresence initial={false} custom={mobileSubMenu}>
-
-                  {/* LEVEL 1: MAIN MENU */}
                   {!mobileSubMenu && (
                     <motion.div
                       key="main-menu"
@@ -245,7 +209,6 @@ const Navbar = () => {
                         ))}
                       </div>
 
-                      {/* Mobile Footer Icons */}
                       <div className="p-8 flex justify-center space-x-8 mt-10">
                         <div className="w-6 h-6 border-2 border-white rounded-md flex items-center justify-center text-[10px]">IG</div>
                         <div className="w-6 h-6 border-2 border-white rounded-md flex items-center justify-center text-[10px]">TT</div>
@@ -253,7 +216,6 @@ const Navbar = () => {
                     </motion.div>
                   )}
 
-                  {/* LEVEL 2: SUB MENU */}
                   {mobileSubMenu && (
                     <motion.div
                       key="sub-menu"
@@ -263,7 +225,6 @@ const Navbar = () => {
                       transition={{ type: 'tween', duration: 0.3 }}
                       className="absolute inset-0 bg-[#121212] overflow-y-auto"
                     >
-                      {/* Back Button Header */}
                       <button
                         onClick={() => setMobileSubMenu(null)}
                         className="flex items-center w-full px-6 py-5 border-b border-gray-800 text-brand-gold font-bold tracking-[0.2em] text-sm uppercase bg-gray-900"
@@ -272,7 +233,6 @@ const Navbar = () => {
                         {mobileSubMenu}
                       </button>
 
-                      {/* Sub Links */}
                       <div className="flex flex-col">
                         {MENU_CONTENT[mobileSubMenu].links.map((link) => (
                           <Link
@@ -288,7 +248,6 @@ const Navbar = () => {
                   )}
                 </AnimatePresence>
               </div>
-
             </motion.div>
           </>
         )}
