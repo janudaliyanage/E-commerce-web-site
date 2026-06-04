@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Edit2, Trash2, Plus, Search } from 'lucide-react';
-import { fetchAllProducts, deleteProduct } from '../../services/api';
+import { fetchAllProducts, deleteProduct } from '../services/api';
 
 const AdminProducts = () => {
   const navigate = useNavigate();

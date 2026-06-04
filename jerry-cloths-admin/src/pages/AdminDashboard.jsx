@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { LogOut, Menu, X, Package, Plus, BarChart3 } from 'lucide-react';
-import { fetchAllProducts } from '../../services/api';
+import { fetchAllProducts } from '../services/api';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();

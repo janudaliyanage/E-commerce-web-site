@@ -10,10 +10,10 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/upload")
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = { "http://localhost:3000", "http://localhost:3001" })
 public class FileUploadController {
 
-    private static final String UPLOAD_DIR = "src/main/resources/static/uploads/";
+    private static final String UPLOAD_DIR = "uploads/";
 
     @PostMapping("/image")
     public UploadResponse uploadImage(@RequestParam("file") MultipartFile file) {

@@ -73,8 +73,8 @@ const LatestArrivals = () => {
                   <div className="absolute bottom-4 left-4">
                     <span
                       className={`px-3 py-1 rounded-full text-xs font-semibold ${product.stock > 0
-                          ? 'bg-green-500 text-white'
-                          : 'bg-red-500 text-white'
+                        ? 'bg-green-500 text-white'
+                        : 'bg-red-500 text-white'
                         }`}
                     >
                       {product.stock > 0 ? `${product.stock} In Stock` : 'Out of Stock'}
