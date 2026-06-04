@@ -19,25 +19,21 @@ public class Product {
     private Integer stock;
     private String status;
 
+    @Column(length = 5000)
+    private String images; // JSON array of image URLs ["url1","url2"]
+
+    @Column(length = 2000)
+    private String colors; // JSON array [{"color":"#fff","label":"White","imageIndex":0}]
+
+    private String sizes;
+
+    // keep imgUrl for backward compatibility
     @Column(length = 1000)
     private String imgUrl;
 
-    private String colors;
-    private String sizes;
-
-    // Constructors
     public Product() {
     }
 
-    public Product(String name, Double price, String category, Integer stock, String status) {
-        this.name = name;
-        this.price = price;
-        this.category = category;
-        this.stock = stock;
-        this.status = status;
-    }
-
-    // Getters and Setters
     public Long getId() {
         return id;
     }
@@ -94,12 +90,12 @@ public class Product {
         this.status = status;
     }
 
-    public String getImgUrl() {
-        return imgUrl;
+    public String getImages() {
+        return images;
     }
 
-    public void setImgUrl(String imgUrl) {
-        this.imgUrl = imgUrl;
+    public void setImages(String images) {
+        this.images = images;
     }
 
     public String getColors() {
@@ -116,5 +112,13 @@ public class Product {
 
     public void setSizes(String sizes) {
         this.sizes = sizes;
+    }
+
+    public String getImgUrl() {
+        return imgUrl;
+    }
+
+    public void setImgUrl(String imgUrl) {
+        this.imgUrl = imgUrl;
     }
 }

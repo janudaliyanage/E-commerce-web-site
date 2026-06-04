@@ -13,7 +13,7 @@ import java.util.UUID;
 @CrossOrigin(origins = { "http://localhost:3000", "http://localhost:3001" })
 public class FileUploadController {
 
-    private static final String UPLOAD_DIR = "uploads/";
+    private static final String UPLOAD_DIR = System.getProperty("user.dir") + "/uploads/";
 
     @PostMapping("/image")
     public UploadResponse uploadImage(@RequestParam("file") MultipartFile file) {
@@ -31,10 +31,9 @@ public class FileUploadController {
             Files.write(filePath, file.getBytes());
 
             String imageUrl = "http://localhost:8080/uploads/" + uniqueFilename;
-
             return new UploadResponse(true, imageUrl, "File uploaded successfully");
         } catch (Exception e) {
-            return new UploadResponse(false, null, "Error uploading file: " + e.getMessage());
+            return new UploadResponse(false, null, "Error: " + e.getMessage());
         }
     }
 
