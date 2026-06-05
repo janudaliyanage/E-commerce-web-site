@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronLeft, X, GripVertical, Plus } from 'lucide-react';
+import { ChevronLeft, X, GripVertical, Plus, Upload } from 'lucide-react';
 import { createProduct, uploadImage } from '../services/api';
 
 const AddProduct = () => {
@@ -15,8 +15,8 @@ const AddProduct = () => {
     status: 'active',
     sizes: '',
   });
-  const [images, setImages] = useState([]); // [{url, uploading}]
-  const [colors, setColors] = useState([]); // [{color, label, imageIndex}]
+  const [images, setImages] = useState([]);
+  const [colors, setColors] = useState([]); // [{label, imageUrl, uploading}]
   const [dragIndex, setDragIndex] = useState(null);
   const [error, setError] = useState('');
 
@@ -25,7 +25,7 @@ const AddProduct = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  // --- Image Handling ---
+  // --- Main Images ---
   const handleImageUpload = async (e) => {
     const files = Array.from(e.target.files);
     for (const file of files) {
@@ -38,7 +38,7 @@ const AddProduct = () => {
         ));
       } else {
         setImages(prev => prev.filter(img => img.tempId !== tempId));
-        alert('Failed to upload one image');
+        alert('Failed to upload image');
       }
     }
     e.target.value = '';
@@ -46,14 +46,9 @@ const AddProduct = () => {
 
   const removeImage = (index) => {
     setImages(prev => prev.filter((_, i) => i !== index));
-    // update color imageIndexes
-    setColors(prev => prev.map(c => ({
-      ...c,
-      imageIndex: c.imageIndex === index ? 0 : c.imageIndex > index ? c.imageIndex - 1 : c.imageIndex
-    })));
   };
 
-  // --- Drag & Drop reorder ---
+  // --- Drag & Drop ---
   const onDragStart = (index) => setDragIndex(index);
   const onDragOver = (e, index) => {
     e.preventDefault();
@@ -62,25 +57,33 @@ const AddProduct = () => {
     const [moved] = newImages.splice(dragIndex, 1);
     newImages.splice(index, 0, moved);
     setImages(newImages);
-    // fix color imageIndexes after reorder
-    setColors(prev => prev.map(c => {
-      let newIdx = c.imageIndex;
-      if (c.imageIndex === dragIndex) newIdx = index;
-      else if (dragIndex < index && c.imageIndex > dragIndex && c.imageIndex <= index) newIdx = c.imageIndex - 1;
-      else if (dragIndex > index && c.imageIndex < dragIndex && c.imageIndex >= index) newIdx = c.imageIndex + 1;
-      return { ...c, imageIndex: newIdx };
-    }));
     setDragIndex(index);
   };
   const onDragEnd = () => setDragIndex(null);
 
-  // --- Color Handling ---
+  // --- Color Variants ---
   const addColor = () => {
-    setColors(prev => [...prev, { color: '#000000', label: '', imageIndex: 0 }]);
+    setColors(prev => [...prev, { label: '', imageUrl: null, uploading: false }]);
   };
-  const updateColor = (index, field, value) => {
-    setColors(prev => prev.map((c, i) => i === index ? { ...c, [field]: value } : c));
+
+  const updateColorLabel = (index, value) => {
+    setColors(prev => prev.map((c, i) => i === index ? { ...c, label: value } : c));
   };
+
+  const handleColorImageUpload = async (e, index) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setColors(prev => prev.map((c, i) => i === index ? { ...c, uploading: true } : c));
+    const imageUrl = await uploadImage(file);
+    if (imageUrl) {
+      setColors(prev => prev.map((c, i) => i === index ? { ...c, imageUrl, uploading: false } : c));
+    } else {
+      setColors(prev => prev.map((c, i) => i === index ? { ...c, uploading: false } : c));
+      alert('Failed to upload color image');
+    }
+    e.target.value = '';
+  };
+
   const removeColor = (index) => {
     setColors(prev => prev.filter((_, i) => i !== index));
   };
@@ -96,13 +99,17 @@ const AddProduct = () => {
     setLoading(true);
     try {
       const imageUrls = images.filter(i => i.url).map(i => i.url);
+      const colorData = colors.map(c => ({
+        label: c.label,
+        imageUrl: c.imageUrl || '',
+      }));
       const productData = {
         ...formData,
         price: parseFloat(formData.price),
         stock: parseInt(formData.stock),
-        imgUrl: imageUrls[0] || '',
+        imgUrl: imageUrls[0] || (colors[0]?.imageUrl || ''),
         images: JSON.stringify(imageUrls),
-        colors: JSON.stringify(colors),
+        colors: JSON.stringify(colorData),
       };
       const result = await createProduct(productData);
       if (result && result.id) {
@@ -195,16 +202,14 @@ const AddProduct = () => {
               </div>
             </div>
 
-            {/* Images */}
+            {/* Main Images */}
             <div className="space-y-4">
               <h2 className="font-semibold text-lg border-b pb-2">Product Images</h2>
               <p className="text-sm text-gray-500">Upload multiple images. Drag to reorder. First image is the main image.</p>
-
               <label className="cursor-pointer flex items-center gap-2 w-fit px-4 py-2 bg-blue-50 border border-blue-300 rounded-lg text-blue-600 hover:bg-blue-100 transition">
                 <Plus size={18} /> Add Images
                 <input type="file" accept="image/*" multiple onChange={handleImageUpload} className="hidden" />
               </label>
-
               {images.length > 0 && (
                 <div className="grid grid-cols-4 gap-3 mt-3">
                   {images.map((img, index) => (
@@ -212,23 +217,18 @@ const AddProduct = () => {
                       onDragStart={() => onDragStart(index)}
                       onDragOver={(e) => onDragOver(e, index)}
                       onDragEnd={onDragEnd}
-                      className={`relative group rounded-lg overflow-hidden border-2 cursor-grab active:cursor-grabbing
+                      className={`relative group rounded-lg overflow-hidden border-2 cursor-grab
                         ${index === 0 ? 'border-blue-500' : 'border-gray-200'}
-                        ${dragIndex === index ? 'opacity-50' : ''}`}
-                    >
+                        ${dragIndex === index ? 'opacity-50' : ''}`}>
                       {img.uploading ? (
-                        <div className="w-full h-24 bg-gray-100 flex items-center justify-center text-xs text-gray-400">
-                          Uploading...
-                        </div>
+                        <div className="w-full h-24 bg-gray-100 flex items-center justify-center text-xs text-gray-400">Uploading...</div>
                       ) : (
                         <img src={img.url} alt="" className="w-full h-24 object-cover" />
                       )}
                       <div className="absolute top-1 left-1 p-1 bg-white bg-opacity-80 rounded text-gray-500">
                         <GripVertical size={14} />
                       </div>
-                      {index === 0 && (
-                        <div className="absolute bottom-1 left-1 text-xs bg-blue-500 text-white px-1 rounded">Main</div>
-                      )}
+                      {index === 0 && <div className="absolute bottom-1 left-1 text-xs bg-blue-500 text-white px-1 rounded">Main</div>}
                       <button type="button" onClick={() => removeImage(index)}
                         className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded opacity-0 group-hover:opacity-100 transition">
                         <X size={12} />
@@ -239,43 +239,58 @@ const AddProduct = () => {
               )}
             </div>
 
-            {/* Colors */}
+            {/* Color Variants */}
             <div className="space-y-4">
               <h2 className="font-semibold text-lg border-b pb-2">Color Variants</h2>
-              <p className="text-sm text-gray-500">Add colors and link each to a product image.</p>
+              <p className="text-sm text-gray-500">Add color variants — upload an image and give it a color name.</p>
 
               {colors.map((c, index) => (
-                <div key={index} className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg">
-                  <input type="color" value={c.color}
-                    onChange={(e) => updateColor(index, 'color', e.target.value)}
-                    className="w-10 h-10 rounded cursor-pointer border-0 p-0" />
-                  <input type="text" value={c.label}
-                    onChange={(e) => updateColor(index, 'label', e.target.value)}
-                    placeholder="Color name (e.g. White)"
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500" />
-                  <div className="flex flex-col">
-                    <label className="text-xs text-gray-500 mb-1">Image</label>
-                    <select value={c.imageIndex}
-                      onChange={(e) => updateColor(index, 'imageIndex', parseInt(e.target.value))}
-                      className="px-2 py-1 border border-gray-300 rounded text-sm">
-                      {images.length === 0
-                        ? <option value={0}>No images</option>
-                        : images.map((img, i) => (
-                          <option key={i} value={i}>Image {i + 1}{i === 0 ? ' (Main)' : ''}</option>
-                        ))
-                      }
-                    </select>
+                <div key={index} className="flex items-center gap-4 p-4 border border-gray-200 rounded-xl bg-gray-50">
+
+                  {/* Image Upload / Preview */}
+                  <div className="relative flex-shrink-0">
+                    {c.imageUrl ? (
+                      <div className="relative w-20 h-20 rounded-lg overflow-hidden border-2 border-gray-300 group">
+                        <img src={c.imageUrl} alt="" className="w-full h-full object-cover" />
+                        <label className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 group-hover:opacity-100 cursor-pointer transition">
+                          <Upload size={16} className="text-white" />
+                          <input type="file" accept="image/*" onChange={(e) => handleColorImageUpload(e, index)} className="hidden" />
+                        </label>
+                      </div>
+                    ) : (
+                      <label className="w-20 h-20 rounded-lg border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition bg-white">
+                        {c.uploading ? (
+                          <span className="text-xs text-gray-400">Uploading...</span>
+                        ) : (
+                          <>
+                            <Upload size={18} className="text-gray-400 mb-1" />
+                            <span className="text-xs text-gray-400">Upload</span>
+                          </>
+                        )}
+                        <input type="file" accept="image/*" onChange={(e) => handleColorImageUpload(e, index)} className="hidden" disabled={c.uploading} />
+                      </label>
+                    )}
                   </div>
+
+                  {/* Color Name */}
+                  <div className="flex-1">
+                    <label className="block text-xs text-gray-500 mb-1">Color Name</label>
+                    <input type="text" value={c.label} onChange={(e) => updateColorLabel(index, e.target.value)}
+                      placeholder="e.g., White, Black, Navy Blue"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500" />
+                  </div>
+
+                  {/* Remove */}
                   <button type="button" onClick={() => removeColor(index)}
-                    className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition">
-                    <X size={16} />
+                    className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition flex-shrink-0">
+                    <X size={18} />
                   </button>
                 </div>
               ))}
 
               <button type="button" onClick={addColor}
-                className="flex items-center gap-2 px-4 py-2 border border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-gray-400 hover:bg-gray-50 transition">
-                <Plus size={16} /> Add Color
+                className="flex items-center gap-2 px-4 py-2 border border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-gray-400 hover:bg-gray-50 transition w-full justify-center">
+                <Plus size={16} /> Add Color Variant
               </button>
             </div>
 

@@ -11,12 +11,13 @@ const ProductCard = ({ product }) => {
     try { return JSON.parse(product.colors || '[]'); } catch { return []; }
   })();
 
-  const [activeImage, setActiveImage] = useState(images[0] || '');
+  const [activeImage, setActiveImage] = useState(images[0] || product.imgUrl || '');
+  const [activeColor, setActiveColor] = useState(0);
   const [liked, setLiked] = useState(false);
 
-  const handleColorClick = (colorObj) => {
-    const img = images[colorObj.imageIndex];
-    if (img) setActiveImage(img);
+  const handleColorClick = (colorObj, index) => {
+    setActiveColor(index);
+    if (colorObj.imageUrl) setActiveImage(colorObj.imageUrl);
   };
 
   return (
@@ -36,7 +37,7 @@ const ProductCard = ({ product }) => {
         >
           <Heart className={`w-4 h-4 ${liked ? 'fill-red-500 text-red-500' : 'text-gray-400'}`} />
         </button>
-        {/* Out of stock overlay */}
+        {/* Out of stock */}
         {product.stock === 0 && (
           <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center">
             <span className="bg-white text-black text-xs font-bold px-3 py-1 uppercase tracking-widest">Sold Out</span>
@@ -46,7 +47,6 @@ const ProductCard = ({ product }) => {
 
       {/* Info */}
       <div className="pt-3 pb-4">
-        {/* Product number + name */}
         <p className="text-xs text-gray-400 uppercase tracking-widest mb-1">{product.id} — {product.category}</p>
         <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-1">{product.name}</h3>
         <p className="text-sm text-gray-800 mb-3">${product.price.toFixed(2)}</p>
@@ -57,14 +57,15 @@ const ProductCard = ({ product }) => {
             {colors.map((c, i) => (
               <button
                 key={i}
-                onClick={() => handleColorClick(c)}
+                onClick={() => handleColorClick(c, i)}
                 title={c.label}
-                className="w-6 h-6 rounded-sm border-2 border-gray-200 hover:border-gray-800 transition overflow-hidden"
-                style={{ backgroundColor: c.color }}
+                className={`w-10 h-10 rounded-sm overflow-hidden border-2 transition
+                  ${activeColor === i ? 'border-gray-900' : 'border-gray-200 hover:border-gray-500'}`}
               >
-                {/* if there's an image for this color, show it as swatch thumbnail */}
-                {images[c.imageIndex] && (
-                  <img src={images[c.imageIndex]} alt={c.label} className="w-full h-full object-cover" />
+                {c.imageUrl ? (
+                  <img src={c.imageUrl} alt={c.label} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full bg-gray-200" />
                 )}
               </button>
             ))}
@@ -114,13 +115,10 @@ const LatestArrivals = () => {
   return (
     <section className="w-full py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
         <div className="mb-10">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 uppercase tracking-tight">Latest Arrivals</h2>
           <p className="text-gray-500 mt-2">Discover our newest collection</p>
         </div>
-
-        {/* Grid */}
         {products.length > 0 ? (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-10">
             {products.map(product => (
