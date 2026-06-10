@@ -244,7 +244,7 @@ const ProductDetail = () => {
 
                         {/* Accordion Sections */}
                         {[
-                            { id: 'description', label: 'DESCRIPTION', content: product.description || 'No description available.' },
+                            { id: 'description', label: 'DESCRIPTION', content: product.description || 'No description available.', isHtml: true },
                             { id: 'material', label: 'MATERIAL', content: 'Details coming soon.' },
                             { id: 'shipping', label: 'SHIPPING & RETURNS', content: 'Free shipping on orders over $50. Returns accepted within 30 days.' },
                             { id: 'faq', label: 'FREQUENTLY ASKED QUESTIONS', content: 'Contact us at (818) 206-8764 for any questions.' },
@@ -257,7 +257,10 @@ const ProductDetail = () => {
                                     {openSection === section.id ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                                 </button>
                                 {openSection === section.id && (
-                                    <div className="pb-4 text-sm text-gray-600 leading-relaxed">{section.content}</div>
+                                    section.isHtml
+                                        ? <div className="pb-4 text-sm text-gray-600 leading-relaxed rich-content"
+                                            dangerouslySetInnerHTML={{ __html: section.content }} />
+                                        : <div className="pb-4 text-sm text-gray-600 leading-relaxed">{section.content}</div>
                                 )}
                             </div>
                         ))}

@@ -2,21 +2,22 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, X, GripVertical, Plus, Upload } from 'lucide-react';
 import { createProduct, uploadImage } from '../services/api';
+import RichEditor from './RichEditor';
 
 const AddProduct = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
-    price: '',
     description: '',
     category: 'FOR HIM',
+    price: '',
     stock: '',
     status: 'active',
     sizes: '',
   });
   const [images, setImages] = useState([]);
-  const [colors, setColors] = useState([]); // [{label, imageUrl, uploading}]
+  const [colors, setColors] = useState([]);
   const [dragIndex, setDragIndex] = useState(null);
   const [error, setError] = useState('');
 
@@ -25,7 +26,6 @@ const AddProduct = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  // --- Main Images ---
   const handleImageUpload = async (e) => {
     const files = Array.from(e.target.files);
     for (const file of files) {
@@ -48,7 +48,6 @@ const AddProduct = () => {
     setImages(prev => prev.filter((_, i) => i !== index));
   };
 
-  // --- Drag & Drop ---
   const onDragStart = (index) => setDragIndex(index);
   const onDragOver = (e, index) => {
     e.preventDefault();
@@ -61,7 +60,6 @@ const AddProduct = () => {
   };
   const onDragEnd = () => setDragIndex(null);
 
-  // --- Color Variants ---
   const addColor = () => {
     setColors(prev => [...prev, { label: '', imageUrl: null, uploading: false }]);
   };
@@ -88,7 +86,6 @@ const AddProduct = () => {
     setColors(prev => prev.filter((_, i) => i !== index));
   };
 
-  // --- Submit ---
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -99,10 +96,7 @@ const AddProduct = () => {
     setLoading(true);
     try {
       const imageUrls = images.filter(i => i.url).map(i => i.url);
-      const colorData = colors.map(c => ({
-        label: c.label,
-        imageUrl: c.imageUrl || '',
-      }));
+      const colorData = colors.map(c => ({ label: c.label, imageUrl: c.imageUrl || '' }));
       const productData = {
         ...formData,
         price: parseFloat(formData.price),
@@ -151,7 +145,7 @@ const AddProduct = () => {
                 <label className="block text-sm font-medium mb-1">Product Name *</label>
                 <input type="text" name="name" value={formData.name} onChange={handleChange}
                   placeholder="e.g., Premium Gym Tee"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500" required />
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-black" required />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -160,27 +154,31 @@ const AddProduct = () => {
                     <span className="absolute left-3 top-2 text-gray-500">$</span>
                     <input type="number" name="price" value={formData.price} onChange={handleChange}
                       placeholder="29.99" step="0.01" min="0"
-                      className="w-full pl-7 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500" required />
+                      className="w-full pl-7 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-black" required />
                   </div>
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1">Stock *</label>
                   <input type="number" name="stock" value={formData.stock} onChange={handleChange}
                     placeholder="50" min="0"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500" required />
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-black" required />
                 </div>
               </div>
+
+              {/* Rich Description */}
               <div>
-                <label className="block text-sm font-medium mb-1">Description</label>
-                <textarea name="description" value={formData.description} onChange={handleChange}
-                  placeholder="Describe your product..." rows="3"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500" />
+                <label className="block text-sm font-medium mb-2">Description</label>
+                <RichEditor
+                  value={formData.description}
+                  onChange={(html) => setFormData(prev => ({ ...prev, description: html }))}
+                />
               </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium mb-1">Category</label>
                   <select name="category" value={formData.category} onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500">
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-black">
                     <option>FOR HIM</option><option>FOR HER</option>
                     <option>NEW DROP</option><option>COLLABS</option><option>LOOKBOOK</option>
                   </select>
@@ -188,7 +186,7 @@ const AddProduct = () => {
                 <div>
                   <label className="block text-sm font-medium mb-1">Status</label>
                   <select name="status" value={formData.status} onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500">
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-black">
                     <option value="active">Active</option>
                     <option value="inactive">Inactive</option>
                   </select>
@@ -198,7 +196,7 @@ const AddProduct = () => {
                 <label className="block text-sm font-medium mb-1">Sizes</label>
                 <input type="text" name="sizes" value={formData.sizes} onChange={handleChange}
                   placeholder="e.g., XS, S, M, L, XL"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500" />
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-black" />
               </div>
             </div>
 
@@ -243,11 +241,8 @@ const AddProduct = () => {
             <div className="space-y-4">
               <h2 className="font-semibold text-lg border-b pb-2">Color Variants</h2>
               <p className="text-sm text-gray-500">Add color variants — upload an image and give it a color name.</p>
-
               {colors.map((c, index) => (
                 <div key={index} className="flex items-center gap-4 p-4 border border-gray-200 rounded-xl bg-gray-50">
-
-                  {/* Image Upload / Preview */}
                   <div className="relative flex-shrink-0">
                     {c.imageUrl ? (
                       <div className="relative w-20 h-20 rounded-lg overflow-hidden border-2 border-gray-300 group">
@@ -271,23 +266,18 @@ const AddProduct = () => {
                       </label>
                     )}
                   </div>
-
-                  {/* Color Name */}
                   <div className="flex-1">
                     <label className="block text-xs text-gray-500 mb-1">Color Name</label>
                     <input type="text" value={c.label} onChange={(e) => updateColorLabel(index, e.target.value)}
                       placeholder="e.g., White, Black, Navy Blue"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500" />
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-black" />
                   </div>
-
-                  {/* Remove */}
                   <button type="button" onClick={() => removeColor(index)}
                     className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition flex-shrink-0">
                     <X size={18} />
                   </button>
                 </div>
               ))}
-
               <button type="button" onClick={addColor}
                 className="flex items-center gap-2 px-4 py-2 border border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-gray-400 hover:bg-gray-50 transition w-full justify-center">
                 <Plus size={16} /> Add Color Variant
@@ -301,7 +291,7 @@ const AddProduct = () => {
                 Cancel
               </button>
               <button type="submit" disabled={loading}
-                className="flex-1 px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition disabled:opacity-50">
+                className="flex-1 px-6 py-2 bg-black hover:bg-gray-800 text-white rounded-lg transition disabled:opacity-50">
                 {loading ? 'Creating...' : 'Create Product'}
               </button>
             </div>
