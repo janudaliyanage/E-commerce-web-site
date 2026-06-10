@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Heart } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { fetchAllProducts } from '../services/api';
 
 const ProductCard = ({ product }) => {
+  const navigate = useNavigate();
+
   const images = (() => {
     try { return JSON.parse(product.images || '[]'); } catch { return product.imgUrl ? [product.imgUrl] : []; }
   })();
@@ -11,17 +14,18 @@ const ProductCard = ({ product }) => {
     try { return JSON.parse(product.colors || '[]'); } catch { return []; }
   })();
 
-  const [activeImage, setActiveImage] = useState(images[0] || product.imgUrl || '');
-  const [activeColor, setActiveColor] = useState(0);
+  const [activeImage, setActiveImage] = useState(images[0] || '');
+  const [activeColor, setActiveColor] = useState(null);
   const [liked, setLiked] = useState(false);
 
-  const handleColorClick = (colorObj, index) => {
+  const handleColorClick = (e, colorObj, index) => {
+    e.stopPropagation();
     setActiveColor(index);
     if (colorObj.imageUrl) setActiveImage(colorObj.imageUrl);
   };
 
   return (
-    <div className="bg-white group cursor-pointer">
+    <div className="bg-white group cursor-pointer" onClick={() => navigate(`/products/${product.id}`)}>
       {/* Image */}
       <div className="relative overflow-hidden bg-gray-100" style={{ aspectRatio: '3/4' }}>
         <img
@@ -30,14 +34,12 @@ const ProductCard = ({ product }) => {
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           onError={(e) => { e.target.src = 'https://placehold.co/400x500?text=No+Image'; }}
         />
-        {/* Wishlist */}
         <button
           onClick={(e) => { e.stopPropagation(); setLiked(!liked); }}
           className="absolute top-3 right-3 p-2 bg-white rounded-full shadow hover:scale-110 transition"
         >
           <Heart className={`w-4 h-4 ${liked ? 'fill-red-500 text-red-500' : 'text-gray-400'}`} />
         </button>
-        {/* Out of stock */}
         {product.stock === 0 && (
           <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center">
             <span className="bg-white text-black text-xs font-bold px-3 py-1 uppercase tracking-widest">Sold Out</span>
@@ -49,24 +51,16 @@ const ProductCard = ({ product }) => {
       <div className="pt-3 pb-4">
         <p className="text-xs text-gray-400 uppercase tracking-widest mb-1">{product.id} — {product.category}</p>
         <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-1">{product.name}</h3>
-        <p className="text-sm text-gray-800 mb-3">${product.price.toFixed(2)}</p>
-
-        {/* Color Swatches */}
+        <p className="text-sm text-gray-800 mb-3">${product.price?.toFixed(2)}</p>
         {colors.length > 0 && (
           <div className="flex items-center gap-1.5 flex-wrap">
             {colors.map((c, i) => (
-              <button
-                key={i}
-                onClick={() => handleColorClick(c, i)}
-                title={c.label}
+              <button key={i} onClick={(e) => handleColorClick(e, c, i)} title={c.label}
                 className={`w-10 h-10 rounded-sm overflow-hidden border-2 transition
-                  ${activeColor === i ? 'border-gray-900' : 'border-gray-200 hover:border-gray-500'}`}
-              >
-                {c.imageUrl ? (
-                  <img src={c.imageUrl} alt={c.label} className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full bg-gray-200" />
-                )}
+                  ${activeColor === i ? 'border-gray-900' : 'border-gray-200 hover:border-gray-500'}`}>
+                {c.imageUrl
+                  ? <img src={c.imageUrl} alt={c.label} className="w-full h-full object-cover" />
+                  : <div className="w-full h-full bg-gray-200" />}
               </button>
             ))}
           </div>
