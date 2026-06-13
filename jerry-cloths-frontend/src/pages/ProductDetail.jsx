@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Heart, Star, ChevronDown, ChevronUp, Share2 } from 'lucide-react';
+import { useCart } from '../components/CartContext';
 
 const API_URL = 'http://localhost:8080/api';
 
 const ProductDetail = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const { addToCart } = useCart();
     const [product, setProduct] = useState(null);
     const [loading, setLoading] = useState(true);
     const [activeImage, setActiveImage] = useState(0);
@@ -19,6 +21,7 @@ const ProductDetail = () => {
     const [showReviewForm, setShowReviewForm] = useState(false);
     const [reviewForm, setReviewForm] = useState({ name: '', rating: 5, comment: '' });
     const [submittingReview, setSubmittingReview] = useState(false);
+    const [addedToCart, setAddedToCart] = useState(false);
 
     useEffect(() => {
         fetchProduct();
@@ -50,6 +53,21 @@ const ProductDetail = () => {
             }
         } catch (err) {
             setReviews([]);
+        }
+    };
+
+    const handleAddToCart = () => {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            navigate('/login');
+            return;
+        }
+        const colors = getColors();
+        const colorObj = selectedColor !== null ? colors[selectedColor] : null;
+        const success = addToCart(product, colorObj, selectedSize);
+        if (success) {
+            setAddedToCart(true);
+            setTimeout(() => setAddedToCart(false), 2000);
         }
     };
 
@@ -127,13 +145,9 @@ const ProductDetail = () => {
     return (
         <div className="min-h-screen bg-gray-50">
             <div className="max-w-7xl mx-auto px-4 py-10">
-
-                {/* Main Product Section */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 bg-white rounded-2xl p-8 shadow-sm">
-
                     {/* Left - Images */}
                     <div>
-                        {/* Main Image */}
                         <div className="relative bg-gray-100 rounded-xl overflow-hidden mb-4" style={{ aspectRatio: '3/4' }}>
                             <img
                                 src={images[activeImage] || 'https://placehold.co/600x800?text=No+Image'}
@@ -146,14 +160,12 @@ const ProductDetail = () => {
                                 <Heart className={`w-5 h-5 ${liked ? 'fill-red-500 text-red-500' : 'text-gray-400'}`} />
                             </button>
                         </div>
-
-                        {/* Thumbnails */}
                         {images.length > 1 && (
                             <div className="flex gap-2 flex-wrap">
                                 {images.map((img, i) => (
                                     <button key={i} onClick={() => setActiveImage(i)}
                                         className={`w-16 h-16 rounded-lg overflow-hidden border-2 transition
-                      ${activeImage === i ? 'border-black' : 'border-gray-200 hover:border-gray-400'}`}>
+                                            ${activeImage === i ? 'border-black' : 'border-gray-200 hover:border-gray-400'}`}>
                                         <img src={img} alt="" className="w-full h-full object-cover" />
                                     </button>
                                 ))}
@@ -163,12 +175,10 @@ const ProductDetail = () => {
 
                     {/* Right - Details */}
                     <div className="flex flex-col">
-                        {/* Title & Price */}
                         <p className="text-xs text-gray-400 uppercase tracking-widest mb-1">{product.id} — {product.category}</p>
                         <h1 className="text-2xl font-bold uppercase tracking-wide text-gray-900 mb-3">{product.name}</h1>
                         <p className="text-2xl font-semibold text-gray-900 mb-4">${product.price?.toFixed(2)}</p>
 
-                        {/* Rating summary */}
                         {reviews.length > 0 && (
                             <div className="flex items-center gap-2 mb-4">
                                 <div className="flex">
@@ -182,7 +192,6 @@ const ProductDetail = () => {
 
                         <hr className="my-4" />
 
-                        {/* Color */}
                         {colors.length > 0 && (
                             <div className="mb-6">
                                 <p className="text-sm font-semibold mb-2">
@@ -190,21 +199,18 @@ const ProductDetail = () => {
                                 </p>
                                 <div className="flex gap-2 flex-wrap">
                                     {colors.map((c, i) => (
-                                        <button key={i} onClick={() => handleColorClick(c, i)}
-                                            title={c.label}
+                                        <button key={i} onClick={() => handleColorClick(c, i)} title={c.label}
                                             className={`w-10 h-10 rounded-sm overflow-hidden border-2 transition
-                        ${selectedColor === i ? 'border-black' : 'border-gray-200 hover:border-gray-500'}`}>
+                                                ${selectedColor === i ? 'border-black' : 'border-gray-200 hover:border-gray-500'}`}>
                                             {c.imageUrl
                                                 ? <img src={c.imageUrl} alt={c.label} className="w-full h-full object-cover" />
-                                                : <div className="w-full h-full bg-gray-200" />
-                                            }
+                                                : <div className="w-full h-full bg-gray-200" />}
                                         </button>
                                     ))}
                                 </div>
                             </div>
                         )}
 
-                        {/* Size */}
                         {sizes.length > 0 && (
                             <div className="mb-6">
                                 <div className="flex items-center justify-between mb-2">
@@ -215,7 +221,7 @@ const ProductDetail = () => {
                                     {sizes.map((size) => (
                                         <button key={size} onClick={() => setSelectedSize(size)}
                                             className={`px-4 py-2 text-sm border rounded transition
-                        ${selectedSize === size ? 'border-black bg-black text-white' : 'border-gray-300 hover:border-black'}`}>
+                                                ${selectedSize === size ? 'border-black bg-black text-white' : 'border-gray-300 hover:border-black'}`}>
                                             {size}
                                         </button>
                                     ))}
@@ -223,26 +229,27 @@ const ProductDetail = () => {
                             </div>
                         )}
 
-                        {/* Stock */}
                         <p className={`text-sm mb-6 ${product.stock > 10 ? 'text-green-600' : product.stock > 0 ? 'text-yellow-600' : 'text-red-600'}`}>
                             {product.stock > 10 ? `In Stock (${product.stock} available)` : product.stock > 0 ? `Low Stock - Only ${product.stock} left!` : 'Out of Stock'}
                         </p>
 
-                        {/* Add to Cart */}
+                        {/* Add to Cart Button */}
                         <button
+                            onClick={handleAddToCart}
                             disabled={product.stock === 0}
-                            className="w-full py-4 border-2 border-black text-black font-bold uppercase tracking-widest text-sm hover:bg-black hover:text-white transition mb-3 disabled:opacity-40 disabled:cursor-not-allowed">
-                            ADD TO CART
+                            className={`w-full py-4 border-2 font-bold uppercase tracking-widest text-sm transition mb-3 disabled:opacity-40 disabled:cursor-not-allowed
+                                ${addedToCart
+                                    ? 'border-green-500 bg-green-500 text-white'
+                                    : 'border-black text-black hover:bg-black hover:text-white'}`}>
+                            {addedToCart ? '✓ Added to Cart' : 'Add to Cart'}
                         </button>
 
-                        {/* Share */}
                         <button className="flex items-center justify-center gap-2 text-sm text-gray-500 hover:text-gray-900 transition mt-2">
                             <Share2 size={15} /> Share
                         </button>
 
                         <hr className="my-6" />
 
-                        {/* Accordion Sections */}
                         {[
                             { id: 'description', label: 'DESCRIPTION', content: product.description || 'No description available.', isHtml: true },
                             { id: 'material', label: 'MATERIAL', content: 'Details coming soon.' },
@@ -284,7 +291,6 @@ const ProductDetail = () => {
                         </button>
                     </div>
 
-                    {/* Review Form */}
                     {showReviewForm && (
                         <div className="bg-gray-50 rounded-xl p-6 mb-6">
                             <h3 className="font-semibold mb-4">Write a Review</h3>
@@ -328,7 +334,6 @@ const ProductDetail = () => {
                         </div>
                     )}
 
-                    {/* Reviews List */}
                     {reviews.length === 0 ? (
                         <div className="text-center py-12">
                             <div className="flex justify-center mb-3">
@@ -362,7 +367,6 @@ const ProductDetail = () => {
                     )}
                 </div>
 
-                {/* You May Also Like */}
                 {relatedProducts.length > 0 && (
                     <div className="mt-12">
                         <h2 className="text-xl font-bold uppercase tracking-widest text-center mb-8">You May Also Like</h2>
