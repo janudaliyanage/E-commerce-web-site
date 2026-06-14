@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, X, GripVertical, Plus, Upload } from 'lucide-react';
 import { createProduct, uploadImage } from '../services/api';
 import RichEditor from './RichEditor';
+import { SUBCATEGORY_MAP } from './subcategoryMap';
 
 const AddProduct = () => {
   const navigate = useNavigate();
@@ -177,10 +178,25 @@ const AddProduct = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium mb-1">Category</label>
-                  <select name="category" value={formData.category} onChange={handleChange}
+                  <select name="category" value={formData.category}
+                    onChange={(e) => {
+                      setFormData(prev => ({ ...prev, category: e.target.value, subcategory: '' }));
+                    }}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-black">
                     <option>FOR HIM</option><option>FOR HER</option>
                     <option>NEW DROP</option><option>COLLABS</option><option>LOOKBOOK</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-1">Subcategory</label>
+                  <select name="subcategory" value={formData.subcategory || ''}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-black">
+                    <option value="">-- Select Subcategory --</option>
+                    {SUBCATEGORY_MAP[formData.category]?.map(sub => (
+                      <option key={sub} value={sub}>{sub}</option>
+                    ))}
                   </select>
                 </div>
                 <div>

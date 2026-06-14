@@ -1,6 +1,7 @@
 package com.jerrycloths.backend.model;
 
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
 @Table(name = "products")
@@ -12,22 +13,26 @@ public class Product {
     private String name;
     private Double price;
 
-    @Column(length = 1000)
+    @Column(length = 5000)
     private String description;
 
     private String category;
+    private String subcategory;
     private Integer stock;
     private String status;
 
+    @Column(name = "is_new_arrival")
+    @JsonProperty("isNewArrival")
+    private Boolean isNewArrival = false;
+
     @Column(length = 5000)
-    private String images; // JSON array of image URLs ["url1","url2"]
+    private String images;
 
     @Column(length = 2000)
-    private String colors; // JSON array [{"color":"#fff","label":"White","imageIndex":0}]
+    private String colors;
 
     private String sizes;
 
-    // keep imgUrl for backward compatibility
     @Column(length = 1000)
     private String imgUrl;
 
@@ -74,6 +79,14 @@ public class Product {
         this.category = category;
     }
 
+    public String getSubcategory() {
+        return subcategory;
+    }
+
+    public void setSubcategory(String subcategory) {
+        this.subcategory = subcategory;
+    }
+
     public Integer getStock() {
         return stock;
     }
@@ -88,6 +101,16 @@ public class Product {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    @JsonProperty("isNewArrival")
+    public Boolean getIsNewArrival() {
+        return isNewArrival;
+    }
+
+    @JsonProperty("isNewArrival")
+    public void setIsNewArrival(Boolean isNewArrival) {
+        this.isNewArrival = isNewArrival;
     }
 
     public String getImages() {

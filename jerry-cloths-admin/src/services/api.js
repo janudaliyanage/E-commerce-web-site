@@ -29,11 +29,15 @@ export const createProduct = async (product) => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(product),
     });
-    if (!response.ok) throw new Error('Failed to create product');
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Server error:', errorText);
+      throw new Error(errorText || 'Failed to create product');
+    }
     return await response.json();
   } catch (error) {
     console.error('Error creating product:', error);
-    return null;
+    throw error;
   }
 };
 
@@ -44,11 +48,15 @@ export const updateProduct = async (id, product) => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(product),
     });
-    if (!response.ok) throw new Error('Failed to update product');
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Server error:', errorText);
+      throw new Error(errorText || 'Failed to update product');
+    }
     return await response.json();
   } catch (error) {
     console.error('Error updating product:', error);
-    return null;
+    throw error;
   }
 };
 
