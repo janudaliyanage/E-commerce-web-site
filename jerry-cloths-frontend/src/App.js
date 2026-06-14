@@ -11,6 +11,7 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import ProductDetail from './pages/ProductDetail';
 import CategoryPage from './pages/CategoryPage';
+import SearchPage from './pages/SearchPage';
 import Checkout from './pages/Checkout';
 import OrderSuccess from './pages/OrderSuccess';
 
@@ -30,6 +31,7 @@ function AppContent() {
           <Route path="/products/:id" element={<ProductDetail />} />
           <Route path="/category/:category" element={<CategoryPage />} />
           <Route path="/category/:category/:subcategory" element={<CategoryPage />} />
+          <Route path="/search" element={<SearchPage />} />
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/order-success" element={<OrderSuccess />} />
           <Route path="/" element={<><Hero /><LatestArrivals /></>} />

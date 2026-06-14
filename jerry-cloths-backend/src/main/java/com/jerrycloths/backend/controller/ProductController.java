@@ -40,6 +40,13 @@ public class ProductController {
         return productRepository.findByIsNewArrivalTrue();
     }
 
+    @GetMapping("/search")
+    public List<Product> searchProducts(@RequestParam String q) {
+        if (q == null || q.trim().isEmpty())
+            return productRepository.findAll();
+        return productRepository.searchProducts(q.trim());
+    }
+
     @PostMapping
     public Product createProduct(@RequestBody Product product) {
         return productRepository.save(product);
