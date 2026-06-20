@@ -21,6 +21,10 @@ public class ReviewController {
 
     @PostMapping
     public Review createReview(@RequestBody Review review) {
+        // mark verified if linked to a logged-in user (simple heuristic for now)
+        if (review.getUserId() != null) {
+            review.setVerified(true);
+        }
         return reviewRepository.save(review);
     }
 

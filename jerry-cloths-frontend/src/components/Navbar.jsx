@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Search, ShoppingBag, User, Menu, ChevronDown, ChevronRight, X, ChevronLeft } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from './CartContext';
+import SearchOverlay from './SearchOverlay';
 
 const CATEGORIES = {
   'FOR HIM': {
@@ -47,6 +48,7 @@ const Navbar = () => {
   const [activeMenu, setActiveMenu] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileSubMenu, setMobileSubMenu] = useState(null);
+  const [searchOpen, setSearchOpen] = useState(false);
   const { setCartOpen, totalItems } = useCart();
   const navigate = useNavigate();
 
@@ -81,8 +83,12 @@ const Navbar = () => {
               </Link>
             </div>
             <div className="flex items-center space-x-4 md:space-x-6 z-10">
-              <Link to="/login"><User className="w-5 h-5 cursor-pointer text-gray-800 hover:text-gray-500 transition hidden md:block" /></Link>
-              <Search className="w-5 h-5 cursor-pointer text-gray-800 hover:text-gray-500 transition" />
+              <Link to="/login">
+                <User className="w-5 h-5 cursor-pointer text-gray-800 hover:text-gray-500 transition hidden md:block" />
+              </Link>
+              <button onClick={() => setSearchOpen(true)}>
+                <Search className="w-5 h-5 cursor-pointer text-gray-800 hover:text-gray-500 transition" />
+              </button>
               <button onClick={handleCartClick} className="relative">
                 <ShoppingBag className="w-5 h-5 cursor-pointer text-gray-800 hover:text-gray-500 transition" />
                 {totalItems > 0 && (
@@ -125,8 +131,7 @@ const Navbar = () => {
                       <ul className="space-y-3">
                         {col.links.map(link => (
                           <li key={link}>
-                            <Link
-                              to={getCategoryLink(activeMenu, link)}
+                            <Link to={getCategoryLink(activeMenu, link)}
                               onClick={() => setActiveMenu(null)}
                               className="text-sm text-gray-600 hover:text-black hover:underline decoration-1 underline-offset-4 transition font-medium">
                               {link}
@@ -197,6 +202,9 @@ const Navbar = () => {
           </div>
         </>
       )}
+
+      {/* Search Overlay */}
+      <SearchOverlay isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
     </>
   );
 };
