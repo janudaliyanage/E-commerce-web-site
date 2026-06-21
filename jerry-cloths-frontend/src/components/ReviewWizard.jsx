@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { X, ArrowLeft, Star, Image as ImageIcon, Video, Loader2 } from 'lucide-react';
 
 const API_URL = 'http://localhost:8080/api';
@@ -121,17 +122,23 @@ const ReviewWizard = ({ productId, itemType, onClose, onSubmitted }) => {
         </div>
     );
 
-    return (
-        <div className={`fixed top-0 left-0 right-0 bottom-0 w-screen h-screen bg-black z-[100] flex items-center justify-center p-4 overflow-y-auto transition-opacity duration-200
-      ${closing || entering ? 'bg-opacity-0' : 'bg-opacity-50'}`}>
-            <div className={`bg-white rounded-2xl w-full max-w-lg relative shadow-2xl transition-all duration-200 ease-out my-auto
-        ${closing || entering ? 'opacity-0 scale-95 translate-y-3' : 'opacity-100 scale-100 translate-y-0'}`}>
+    return createPortal(
+        <div className={`fixed inset-0 z-[9999] flex items-center justify-center p-4 ${closing || entering ? 'pointer-events-none' : ''}`}>
+
+            {/* Dark backdrop - its own layer, so opacity only affects this, not the card */}
+            <div
+                onClick={handleClose}
+                className={`absolute inset-0 bg-black transition-opacity duration-200 ${closing || entering ? 'opacity-0' : 'opacity-50'}`}
+            />
+
+            <div className={`bg-white rounded-2xl w-full max-w-lg relative shadow-2xl transition-all duration-200 ease-out z-10
+        ${closing || entering ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}>
 
                 <button onClick={handleClose} className="absolute top-5 left-5 p-1 hover:bg-gray-100 rounded-full transition z-10">
                     <X size={22} />
                 </button>
 
-                <div className="px-8 pt-16 pb-8 min-h-[420px] flex flex-col overflow-hidden relative">
+                <div className="px-8 pt-16 pb-8 min-h-auto flex flex-col relative">
 
                     <div
                         key={step}
@@ -266,6 +273,12 @@ const ReviewWizard = ({ productId, itemType, onClose, onSubmitted }) => {
                                 <button onClick={goNext} className="text-sm font-semibold text-gray-500 hover:text-black transition">Skip</button>
                             )
                         )}
+                        {step === 3 && (
+                            <button onClick={goNext} disabled={!fitFeedback}
+                                className="px-5 py-2 bg-black text-white rounded-lg text-sm font-semibold hover:bg-gray-800 transition disabled:opacity-40 disabled:cursor-not-allowed">
+                                Next
+                            </button>
+                        )}
                         {step === 4 && (
                             <button onClick={handleSubmit} disabled={submitting || !comment.trim()}
                                 className="px-5 py-2 bg-black text-white rounded-lg text-sm font-semibold hover:bg-gray-800 transition disabled:opacity-40">
@@ -292,7 +305,8 @@ const ReviewWizard = ({ productId, itemType, onClose, onSubmitted }) => {
           animation: fadeIn 0.25s ease-out;
         }
       `}</style>
-        </div>
+        </div>,
+        document.body
     );
 };
 
