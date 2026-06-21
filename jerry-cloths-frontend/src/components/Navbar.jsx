@@ -1,10 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, ShoppingBag, User, Menu, ChevronDown, ChevronRight, X, ChevronLeft } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from './CartContext';
 import SearchOverlay from './SearchOverlay';
 
-const CATEGORIES = {
+const API_URL = 'http://localhost:8080/api';
+
+// Static fallback/baseline data (dropdown links never change here — only
+// the `image` + `imageCaption` per category are editable via the admin panel
+// and override these defaults once fetched).
+const DEFAULT_CATEGORIES = {
   'FOR HIM': {
     desktopColumns: [
       { title: 'PRODUCTS', links: ['Tanks', 'Shirts', 'Longsleeves', 'Shorts', 'Pants/Jeans', 'Outerwear', 'Joggers', 'Hats/Beanies'] },
@@ -45,12 +50,39 @@ const CATEGORIES = {
 };
 
 const Navbar = () => {
+  const [categories, setCategories] = useState(DEFAULT_CATEGORIES);
   const [activeMenu, setActiveMenu] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileSubMenu, setMobileSubMenu] = useState(null);
   const [searchOpen, setSearchOpen] = useState(false);
   const { setCartOpen, totalItems } = useCart();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch(`${API_URL}/nav-images`)
+      .then(res => res.json())
+      .then(data => {
+        if (cancelled || !Array.isArray(data)) return;
+        setCategories(prev => {
+          const next = { ...prev };
+          data.forEach(row => {
+            // Only override a category if the admin actually set an image for it —
+            // otherwise keep the built-in default so the dropdown is never blank.
+            if (next[row.category] && row.imageUrl) {
+              next[row.category] = {
+                ...next[row.category],
+                image: row.imageUrl,
+                imageCaption: row.caption || next[row.category].imageCaption,
+              };
+            }
+          });
+          return next;
+        });
+      })
+      .catch(() => { /* keep defaults if the backend isn't reachable */ });
+    return () => { cancelled = true; };
+  }, []);
 
   const handleCartClick = () => {
     const token = localStorage.getItem('token');
@@ -107,7 +139,7 @@ const Navbar = () => {
         {/* Desktop Nav */}
         <nav className="hidden md:block relative bg-white z-40 border-b border-gray-100">
           <div className="flex justify-center">
-            {Object.keys(CATEGORIES).map(item => (
+            {Object.keys(categories).map(item => (
               <div key={item} className="px-6 py-4 cursor-pointer" onMouseEnter={() => setActiveMenu(item)}>
                 <Link to={getCategoryLink(item)}
                   className={`flex items-center gap-1 text-[11px] font-extrabold tracking-[0.15em] hover:text-yellow-600 transition uppercase
@@ -119,13 +151,13 @@ const Navbar = () => {
           </div>
 
           {/* Dropdown */}
-          {activeMenu && CATEGORIES[activeMenu] && (
+          {activeMenu && categories[activeMenu] && (
             <div className="absolute top-full left-0 w-full bg-white border-b border-gray-200 shadow-xl z-50"
               onMouseEnter={() => setActiveMenu(activeMenu)}
               onMouseLeave={() => setActiveMenu(null)}>
               <div className="max-w-7xl mx-auto px-10 py-12 flex justify-between min-h-[300px]">
                 <div className="flex gap-20">
-                  {CATEGORIES[activeMenu].desktopColumns?.map((col, idx) => (
+                  {categories[activeMenu].desktopColumns?.map((col, idx) => (
                     <div key={idx} className="min-w-[160px]">
                       <h4 className="text-xs font-bold tracking-[0.1em] text-gray-400 mb-6 uppercase">{col.title}</h4>
                       <ul className="space-y-3">
@@ -142,15 +174,15 @@ const Navbar = () => {
                     </div>
                   ))}
                 </div>
-                {CATEGORIES[activeMenu].image && (
+                {categories[activeMenu].image && (
                   <div className="w-[280px] flex flex-col items-center text-center">
                     <div className="w-full h-[300px] overflow-hidden bg-gray-100 mb-4">
-                      <img src={CATEGORIES[activeMenu].image} alt="Featured"
+                      <img src={categories[activeMenu].image} alt="Featured"
                         className="w-full h-full object-cover hover:scale-105 transition duration-700" />
                     </div>
                     <Link to={getCategoryLink(activeMenu)}
                       className="text-xs font-bold tracking-[0.2em] uppercase border-b border-transparent hover:border-black pb-1">
-                      {CATEGORIES[activeMenu].imageCaption}
+                      {categories[activeMenu].imageCaption}
                     </Link>
                   </div>
                 )}
@@ -171,7 +203,7 @@ const Navbar = () => {
             </div>
             <div className="flex-1 overflow-y-auto">
               {!mobileSubMenu ? (
-                Object.keys(CATEGORIES).map(key => (
+                Object.keys(categories).map(key => (
                   <button key={key} onClick={() => setMobileSubMenu(key)}
                     className="flex justify-between items-center w-full px-6 py-5 border-b border-gray-800 text-sm font-bold tracking-[0.2em] uppercase hover:bg-gray-900 transition">
                     {key}<ChevronRight size={16} />
@@ -188,7 +220,7 @@ const Navbar = () => {
                     className="block px-6 py-4 border-b border-gray-800 text-sm font-bold text-white">
                     All {mobileSubMenu}
                   </Link>
-                  {CATEGORIES[mobileSubMenu].desktopColumns?.flatMap(col => col.links).map(link => (
+                  {categories[mobileSubMenu].desktopColumns?.flatMap(col => col.links).map(link => (
                     <Link key={link}
                       to={getCategoryLink(mobileSubMenu, link)}
                       onClick={() => { setMobileMenuOpen(false); setMobileSubMenu(null); }}

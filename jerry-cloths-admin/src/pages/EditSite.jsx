@@ -5,13 +5,96 @@ import { uploadImage } from '../services/api';
 
 const API_URL = 'http://localhost:8080/api';
 
+// Must match the dropdown keys in jerry-cloths-frontend/src/components/Navbar.jsx
+// (LOOKBOOK is excluded there too — it has no featured image)
+const NAV_CATEGORIES = ['FOR HIM', 'FOR HER', 'NEW DROP', 'COLLABS'];
+
 const EditSite = () => {
     const [activeTab, setActiveTab] = useState('banners');
     const [banners, setBanners] = useState([]);
     const [loadingBanners, setLoadingBanners] = useState(true);
     const [dragIndex, setDragIndex] = useState(null);
 
-    useEffect(() => { fetchBanners(); }, []);
+    // navImages: { 'FOR HIM': { imageUrl, caption, uploading, saving }, ... }
+    const emptyNavImages = () =>
+        NAV_CATEGORIES.reduce((acc, cat) => {
+            acc[cat] = { imageUrl: '', caption: '', uploading: false, saving: false };
+            return acc;
+        }, {});
+    const [navImages, setNavImages] = useState(emptyNavImages());
+    const [loadingNavImages, setLoadingNavImages] = useState(true);
+
+    useEffect(() => { fetchBanners(); fetchNavImages(); }, []);
+
+    const fetchNavImages = async () => {
+        setLoadingNavImages(true);
+        try {
+            const res = await fetch(`${API_URL}/nav-images`);
+            if (!res.ok) throw new Error(`Request failed: ${res.status}`);
+            const data = await res.json();
+            if (!Array.isArray(data)) throw new Error('Unexpected response shape');
+            setNavImages(prev => {
+                const next = { ...prev };
+                data.forEach(row => {
+                    if (next[row.category]) {
+                        next[row.category] = {
+                            ...next[row.category],
+                            imageUrl: row.imageUrl || '',
+                            caption: row.caption || '',
+                        };
+                    }
+                });
+                return next;
+            });
+        } catch (err) {
+            console.error('Failed to fetch navbar images:', err.message);
+        } finally {
+            setLoadingNavImages(false);
+        }
+    };
+
+    const handleNavImageUpload = async (e, category) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        setNavImages(prev => ({ ...prev, [category]: { ...prev[category], uploading: true } }));
+        const url = await uploadImage(file);
+        if (url) {
+            setNavImages(prev => ({ ...prev, [category]: { ...prev[category], imageUrl: url, uploading: false } }));
+        } else {
+            alert('Failed to upload image');
+            setNavImages(prev => ({ ...prev, [category]: { ...prev[category], uploading: false } }));
+        }
+        e.target.value = '';
+    };
+
+    const handleNavCaptionChange = (category, value) => {
+        setNavImages(prev => ({ ...prev, [category]: { ...prev[category], caption: value } }));
+    };
+
+    const saveNavImage = async (category) => {
+        const entry = navImages[category];
+        setNavImages(prev => ({ ...prev, [category]: { ...prev[category], saving: true } }));
+        try {
+            const res = await fetch(`${API_URL}/nav-images/${encodeURIComponent(category)}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ imageUrl: entry.imageUrl, caption: entry.caption }),
+            });
+            if (!res.ok) {
+                const text = await res.text().catch(() => '');
+                throw new Error(`HTTP ${res.status} ${res.statusText}${text ? ` — ${text.slice(0, 200)}` : ''}`);
+            }
+            const saved = await res.json();
+            setNavImages(prev => ({
+                ...prev,
+                [category]: { ...prev[category], imageUrl: saved.imageUrl || '', caption: saved.caption || '', saving: false },
+            }));
+        } catch (err) {
+            console.error('Failed to save navbar image:', err);
+            alert(`Failed to save navbar image:\n${err.message}`);
+            setNavImages(prev => ({ ...prev, [category]: { ...prev[category], saving: false } }));
+        }
+    };
 
     const fetchBanners = async () => {
         setLoadingBanners(true);
@@ -222,9 +305,78 @@ const EditSite = () => {
 
                 {/* Navbar Tab */}
                 {activeTab === 'navbar' && (
-                    <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 space-y-6 max-w-2xl">
-                        <h2 className="font-semibold text-lg">Navbar Settings</h2>
-                        <p className="text-sm text-gray-400">Navbar customization coming soon.</p>
+                    <div className="space-y-4 max-w-3xl">
+                        <div className="mb-2">
+                            <h2 className="font-semibold text-lg">Navbar Dropdown Images</h2>
+                            <p className="text-sm text-gray-500">
+                                Each menu (FOR HIM, FOR HER, NEW DROP, COLLABS) shows a featured image on the right
+                                side of its dropdown. Upload an image and caption for each below.
+                            </p>
+                        </div>
+
+                        {loadingNavImages ? (
+                            <div className="text-center py-8 text-gray-400">Loading navbar images...</div>
+                        ) : (
+                            NAV_CATEGORIES.map(category => {
+                                const entry = navImages[category];
+                                return (
+                                    <div key={category} className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
+                                        <div className="flex items-start gap-4">
+                                            {/* Image */}
+                                            <div className="flex-shrink-0">
+                                                {entry.imageUrl ? (
+                                                    <div className="relative w-40 h-24 rounded-lg overflow-hidden border border-gray-200 group">
+                                                        <img src={entry.imageUrl} alt="" className="w-full h-full object-cover" />
+                                                        <label className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 group-hover:opacity-100 cursor-pointer transition">
+                                                            <Upload size={18} className="text-white" />
+                                                            <input type="file" accept="image/*" className="hidden"
+                                                                onChange={(e) => handleNavImageUpload(e, category)}
+                                                                disabled={entry.uploading} />
+                                                        </label>
+                                                    </div>
+                                                ) : (
+                                                    <label className="w-40 h-24 rounded-lg border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer hover:border-black hover:bg-gray-50 transition bg-white">
+                                                        {entry.uploading ? (
+                                                            <span className="text-xs text-gray-400">Uploading...</span>
+                                                        ) : (
+                                                            <>
+                                                                <Upload size={20} className="text-gray-400 mb-1" />
+                                                                <span className="text-xs text-gray-400">Upload Image</span>
+                                                            </>
+                                                        )}
+                                                        <input type="file" accept="image/*" className="hidden"
+                                                            onChange={(e) => handleNavImageUpload(e, category)}
+                                                            disabled={entry.uploading} />
+                                                    </label>
+                                                )}
+                                            </div>
+
+                                            {/* Caption + Save */}
+                                            <div className="flex-1 space-y-3">
+                                                <div>
+                                                    <label className="block text-xs font-medium text-gray-500 mb-1">Caption (shown under the image)</label>
+                                                    <input type="text" value={entry.caption}
+                                                        onChange={(e) => handleNavCaptionChange(category, e.target.value)}
+                                                        placeholder="e.g. MEN'S NEW DROP"
+                                                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-black" />
+                                                </div>
+                                                <button onClick={() => saveNavImage(category)}
+                                                    disabled={!entry.imageUrl || entry.saving || entry.uploading}
+                                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-black text-white rounded-lg text-xs font-medium hover:bg-gray-800 transition disabled:opacity-40">
+                                                    <Save size={13} />
+                                                    {entry.saving ? 'Saving...' : 'Save'}
+                                                </button>
+                                            </div>
+
+                                            {/* Category label */}
+                                            <div className="flex-shrink-0 px-3 py-1 bg-gray-100 rounded-full text-xs font-bold text-gray-500 uppercase tracking-wide">
+                                                {category}
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })
+                        )}
                     </div>
                 )}
             </div>
