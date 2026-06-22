@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
     LayoutDashboard, Package, ShoppingCart, BarChart2,
-    Tag, Layers, MessageSquare, Settings, LogOut, Menu, X, ChevronRight
+    Tag, Layers, MessageSquare, Settings, LogOut, Menu, X, ChevronRight, Mail
 } from 'lucide-react';
 
 const navItems = [
@@ -13,6 +13,7 @@ const navItems = [
     { label: 'Sales', icon: BarChart2, path: '/admin/sales' },
     { label: 'Offers', icon: Tag, path: '/admin/offers' },
     { label: 'Stock', icon: Layers, path: '/admin/stock' },
+    { label: 'Newsletter', icon: Mail, path: '/admin/newsletter' },
     { label: 'Messages', icon: MessageSquare, path: '/admin/messages' },
 ];
 
