@@ -5,7 +5,7 @@ import { useCart } from '../components/CartContext';
 
 const API_URL = 'http://localhost:8080/api';
 
-const ProductCard = ({ product }) => {
+export const ProductCard = ({ product }) => {
     const navigate = useNavigate();
     const images = (() => { try { return JSON.parse(product.images || '[]'); } catch { return product.imgUrl ? [product.imgUrl] : []; } })();
     const colors = (() => { try { return JSON.parse(product.colors || '[]'); } catch { return []; } })();

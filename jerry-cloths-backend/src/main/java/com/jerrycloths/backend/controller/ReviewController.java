@@ -19,6 +19,13 @@ public class ReviewController {
         return reviewRepository.findByProductIdOrderByCreatedAtDesc(productId);
     }
 
+    // All reviews across every product, newest first — powers the storefront's
+    // "Customer Reviews" page (linked from the footer).
+    @GetMapping
+    public List<Review> getAllReviews() {
+        return reviewRepository.findAllByOrderByCreatedAtDesc();
+    }
+
     @PostMapping
     public Review createReview(@RequestBody Review review) {
         // mark verified if linked to a logged-in user (simple heuristic for now)

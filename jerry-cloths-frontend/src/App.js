@@ -14,6 +14,10 @@ import CategoryPage from './pages/CategoryPage';
 import SearchPage from './pages/SearchPage';
 import Checkout from './pages/Checkout';
 import OrderSuccess from './pages/OrderSuccess';
+import AllProducts from './pages/AllProducts';
+import AllReviews from './pages/AllReviews';
+import ContactUs from './pages/ContactUs';
+import InfoPage from './pages/InfoPage';
 
 function AppContent() {
   const location = useLocation();
@@ -34,6 +38,10 @@ function AppContent() {
           <Route path="/search" element={<SearchPage />} />
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/order-success" element={<OrderSuccess />} />
+          <Route path="/products" element={<AllProducts />} />
+          <Route path="/reviews" element={<AllReviews />} />
+          <Route path="/contact" element={<ContactUs />} />
+          <Route path="/info/:slug" element={<InfoPage />} />
           <Route path="/" element={<><Hero /><LatestArrivals /></>} />
         </Routes>
       </PageTransition>

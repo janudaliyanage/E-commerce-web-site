@@ -6,6 +6,8 @@ import AdminProducts from './pages/AdminProducts';
 import AddProduct from './pages/AddProduct';
 import EditProduct from './pages/EditProduct';
 import EditSite from './pages/EditSite';
+import Orders from './pages/Orders';
+import Sales from './pages/Sales';
 import Newsletter from './pages/Newsletter';
 import Messages from './pages/Messages';
 import ComingSoon from './pages/ComingSoon';
@@ -21,8 +23,8 @@ function App() {
         <Route path="/admin/products/add" element={<AddProduct />} />
         <Route path="/admin/products/:id/edit" element={<EditProduct />} />
         <Route path="/admin/edit" element={<EditSite />} />
-        <Route path="/admin/orders" element={<ComingSoon title="Orders" />} />
-        <Route path="/admin/sales" element={<ComingSoon title="Sales" />} />
+        <Route path="/admin/orders" element={<Orders />} />
+        <Route path="/admin/sales" element={<Sales />} />
         <Route path="/admin/offers" element={<ComingSoon title="Offers" />} />
         <Route path="/admin/stock" element={<ComingSoon title="Stock" />} />
         <Route path="/admin/newsletter" element={<Newsletter />} />

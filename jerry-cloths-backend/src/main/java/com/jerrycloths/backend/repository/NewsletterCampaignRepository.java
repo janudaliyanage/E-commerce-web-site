@@ -1,0 +1,12 @@
+package com.jerrycloths.backend.repository;
+
+import com.jerrycloths.backend.model.NewsletterCampaign;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+
+@Repository
+public interface NewsletterCampaignRepository extends JpaRepository<NewsletterCampaign, Long> {
+    List<NewsletterCampaign> findAllByOrderBySentAtDesc();
+}
