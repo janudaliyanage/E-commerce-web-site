@@ -18,6 +18,8 @@ import AllProducts from './pages/AllProducts';
 import AllReviews from './pages/AllReviews';
 import ContactUs from './pages/ContactUs';
 import InfoPage from './pages/InfoPage';
+import OfferPopup from './components/OfferPopup';
+import OffersPage from './pages/OffersPage';
 
 function AppContent() {
   const location = useLocation();
@@ -28,6 +30,7 @@ function AppContent() {
     <>
       {shouldShow && <Navbar />}
       <CartSidebar />
+      <OfferPopup />
       <PageTransition>
         <Routes location={location} key={location.pathname}>
           <Route path="/login" element={<Login />} />
@@ -42,6 +45,7 @@ function AppContent() {
           <Route path="/reviews" element={<AllReviews />} />
           <Route path="/contact" element={<ContactUs />} />
           <Route path="/info/:slug" element={<InfoPage />} />
+          <Route path="/offers" element={<OffersPage />} />
           <Route path="/" element={<><Hero /><LatestArrivals /></>} />
         </Routes>
       </PageTransition>

@@ -43,7 +43,8 @@ const DEFAULT_CATEGORIES = {
   },
   'LOOKBOOK': {
     desktopColumns: [
-      { title: 'LOOKBOOK', links: ['For Him', 'For Her'] }
+      { title: 'LOOKBOOK', links: ['For Him', 'For Her'] },
+      { title: 'OFFERS', links: ['Current Offers'] }
     ],
     image: null,
   }
@@ -91,6 +92,7 @@ const Navbar = () => {
   };
 
   const getCategoryLink = (category, subcategory) => {
+    if (subcategory === 'Current Offers') return '/offers';
     if (subcategory) return `/category/${encodeURIComponent(category)}/${encodeURIComponent(subcategory)}`;
     return `/category/${encodeURIComponent(category)}`;
   };

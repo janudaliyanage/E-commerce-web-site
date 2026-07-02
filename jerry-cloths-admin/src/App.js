@@ -8,6 +8,7 @@ import EditProduct from './pages/EditProduct';
 import EditSite from './pages/EditSite';
 import Orders from './pages/Orders';
 import Sales from './pages/Sales';
+import Offers from './pages/Offers';
 import Newsletter from './pages/Newsletter';
 import Messages from './pages/Messages';
 import ComingSoon from './pages/ComingSoon';
@@ -25,7 +26,7 @@ function App() {
         <Route path="/admin/edit" element={<EditSite />} />
         <Route path="/admin/orders" element={<Orders />} />
         <Route path="/admin/sales" element={<Sales />} />
-        <Route path="/admin/offers" element={<ComingSoon title="Offers" />} />
+        <Route path="/admin/offers" element={<Offers />} />
         <Route path="/admin/stock" element={<ComingSoon title="Stock" />} />
         <Route path="/admin/newsletter" element={<Newsletter />} />
         <Route path="/admin/messages" element={<Messages />} />
