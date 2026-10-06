@@ -1,3 +1,5 @@
+//ensure cart totals are recalculated after cart update.
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const CartContext = createContext();
